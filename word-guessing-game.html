@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра в слова</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #e74c3c;
+            --success-color: #2ecc71;
+            --background-color: #f5f6fa;
+            --text-color: #2c3e50;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+            --coffee-light: #E6DCCD;
+            --coffee-medium: #D4BBA3;
+            --coffee-dark: #A68B6C;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: linear-gradient(135deg, var(--coffee-light) 0%, var(--coffee-medium) 50%, var(--coffee-dark) 100%);
+            background-attachment: fixed;
+        }
+
+        /* Добавляем текстуру и узор для фона */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(166, 139, 108, 0.05) 0%, transparent 50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+            margin-top: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                0 2px 4px rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Profile Section */
+        .profile-section {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .profile-icon {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid var(--coffee-dark);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-dropdown {
+            position: relative;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            min-width: 180px;
+            border: 1px solid var(--coffee-dark);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-dropdown.hidden {
+            display: block;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-20px);
+        }
+
+        .profile-dropdown:not(.hidden) {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .dropdown-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            text-align: left;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: var(--border-radius);
+            color: var(--text-color);
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dropdown-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, var(--coffee-light), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .dropdown-btn:hover::before {
+            opacity: 1;
+        }
+
+        .dropdown-btn:hover {
+            background-color: transparent;
+            color: var(--coffee-dark);
+            padding-left: 20px;
+        }
+
+        /* Анимированные фоновые элементы */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            width: 100vmax;
+            height: 100vmax;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(74, 144, 226, 0.05) 0%, transparent 60%);
+            animation: pulse 15s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        body::after {
+            background: radial-gradient(circle, rgba(46, 204, 113, 0.05) 0%, transparent 60%);
+            animation-delay: -5s;
+        }
+
+        /* Декоративные элементы */
+        .decorative-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .decorative-shapes::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+        }
+
+        .decorative-shapes::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--success-color), var(--primary-color));
+        }
+
+        /* Декоративные элементы */
+        .decorative-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.4;
+            background-image: 
+                radial-gradient(circle at 100% 50%, transparent 20%, rgba(255, 255, 255, 0.05) 21%, rgba(255, 255, 255, 0.05) 34%, transparent 35%, transparent),
+                radial-gradient(circle at 0% 50%, transparent 20%, rgba(255, 255, 255, 0.05) 21%, rgba(255, 255, 255, 0.05) 34%, transparent 35%, transparent);
+            background-size: 50px 100px;
+        }
+
+        /* Декоративные углы */
+        .corner-decoration {
+            position: fixed;
+            width: 150px;
+            height: 150px;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.2;
+        }
+
+        .corner-decoration::before,
+        .corner-decoration::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, var(--coffee-dark) 0%, transparent 40%),
+                linear-gradient(-45deg, var(--coffee-medium) 0%, transparent 40%);
+        }
+
+        .corner-top-left {
+            top: 0;
+            left: 0;
+        }
+
+        .corner-top-right {
+            top: 0;
+            right: 0;
+            transform: scaleX(-1);
+        }
+
+        .corner-bottom-left {
+            bottom: 0;
+            left: 0;
+            transform: scaleY(-1);
+        }
+
+        .corner-bottom-right {
+            bottom: 0;
+            right: 0;
+            transform: scale(-1);
+        }
+
+        /* Стили для карточек уровней */
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .level-button {
+            background: white;
+            border: 2px solid var(--coffee-medium);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            animation: float 6s ease-in-out infinite;
+            animation-delay: calc(var(--animation-order) * 0.2s);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-button:nth-child(odd) {
+            --animation-order: 1;
+        }
+
+        .level-button:nth-child(even) {
+            --animation-order: 2;
+        }
+
+        .level-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .level-button:hover::before {
+            transform: translateX(100%);
+        }
+
+        /* Стили для заголовков */
+        h1, h2 {
+            background: linear-gradient(120deg, var(--primary-color), var(--success-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Декоративная линия под заголовками */
+        h1::after, h2::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, var(--coffee-medium), var(--coffee-light));
+            margin: 10px auto;
+            border-radius: 2px;
+        }
+
+        /* Обновленные стили для кнопок */
+        .btn {
+            background: linear-gradient(135deg, var(--coffee-dark), var(--coffee-medium));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn:hover::after {
+            opacity: 1;
+        }
+
+        /* Добавляем стили для оверлея яркости */
+        #brightnessOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0);
+            pointer-events: none;
+            transition: background-color 0.3s ease;
+            z-index: 90;
+        }
+
+        /* Обновляем z-индексы для элементов, которые должны быть поверх оверлея */
+        .btn, .level-button, .key, .profile-icon, .profile-dropdown, .modal {
+            position: relative;
+            z-index: 100;
+        }
+
+        /* Обновляем стили для профиля */
+        .profile-section {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .profile-icon {
+            background: white;
+            border: 2px solid var(--coffee-dark);
+        }
+
+        .profile-dropdown {
+            background: white;
+            border: 1px solid var(--coffee-dark);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Auth Container Styles */
+        .auth-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-box {
+            background: white;
+            padding: 40px;
+            border-radius: var(--border-radius);
+            max-width: 400px;
+            margin: 0 auto;
+            border: 2px solid var(--coffee-dark);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .auth-box h1 {
+            margin-bottom: 30px;
+            color: var(--primary-color);
+        }
+
+        /* Button Styles */
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Start Game Button */
+        .start-game-container {
+            text-align: center;
+            padding: 100px 0;
+        }
+
+        .start-game-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            box-shadow: var(--box-shadow);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .start-game-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Levels Grid */
+        .levels-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .levels-container h1 {
+            margin-bottom: 40px;
+            color: var(--primary-color);
+        }
+
+        .level-button.locked {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .level-button.completed {
+            background-color: var(--coffee-dark);
+            color: white;
+        }
+
+        .level-button.available {
+            background-color: var(--coffee-medium);
+            color: white;
+        }
+
+        .level-button:not(.locked):hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Game Interface */
+        .game-interface {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 10px;
+            transition: transform var(--transition-speed);
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+        }
+
+        .attempts-counter {
+            font-size: 18px;
+            color: var(--text-color);
+        }
+
+        .word-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .word-display {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .letter-box {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 5px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .key {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: var(--border-radius);
+            background-color: #f0f0f0;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        .key:hover:not(.used):not(.correct):not(.wrong) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            background-color: #f0f0f0;
+        }
+
+        .key.used {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .key.correct {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .key.wrong {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity var(--transition-speed);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all var(--transition-speed);
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+        }
+
+        /* Settings Styles */
+        .settings-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Game Message */
+        .game-message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-size: 18px;
+        }
+
+        .game-message.success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+        }
+
+        .game-message.error {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--secondary-color);
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(10px, -15px) rotate(5deg);
+            }
+            50% {
+                transform: translate(-5px, -25px) rotate(-3deg);
+            }
+            75% {
+                transform: translate(-15px, -10px) rotate(2deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .levels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
+            }
+
+            .letter-box {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+
+            .key {
+                font-size: 16px;
+            }
+        }
+
+        /* Добавляем стили для физических декораций */
+        .physics-decorations {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.35;
+        }
+
+        .physics-formula {
+            position: absolute;
+            font-family: 'Times New Roman', serif;
+            color: var(--coffee-dark);
+            font-size: 28px;
+            animation: float 10s infinite ease-in-out;
+            text-shadow: 2px 2px 4px rgba(166, 139, 108, 0.3);
+            font-weight: bold;
+        }
+
+        .formula-1 { top: 10%; left: 5%; animation-delay: 0s; }
+        .formula-2 { top: 30%; right: 8%; animation-delay: 2s; }
+        .formula-3 { bottom: 15%; left: 12%; animation-delay: 4s; }
+        .formula-4 { bottom: 40%; right: 15%; animation-delay: 6s; }
+
+        /* Стили для кофейных чашек */
+        .coffee-cup {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            opacity: 0.4;
+            animation: steam 8s infinite ease-in-out;
+            font-size: 40px;
+            filter: drop-shadow(2px 2px 4px rgba(166, 139, 108, 0.5));
+        }
+
+        .cup-1 { top: 20%; left: 20%; animation-delay: 1s; }
+        .cup-2 { top: 60%; right: 25%; animation-delay: 3s; }
+        .cup-3 { bottom: 25%; left: 30%; animation-delay: 5s; }
+
+        /* Анимация для пара от кофе */
+        @keyframes steam {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.4;
+            }
+            50% {
+                transform: translateY(-20px) rotate(8deg);
+                opacity: 0.6;
+            }
+        }
+
+        /* Атомы и молекулы */
+        .atom {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--coffee-dark);
+            border-radius: 50%;
+            opacity: 0.35;
+            animation: rotate 12s infinite linear;
+            box-shadow: 0 0 15px rgba(166, 139, 108, 0.3);
+        }
+
+        .atom::before,
+        .atom::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid var(--coffee-dark);
+            border-radius: 50%;
+            top: -3px;
+            left: -3px;
+        }
+
+        .atom::before {
+            transform: rotate(60deg);
+        }
+
+        .atom::after {
+            transform: rotate(-60deg);
+        }
+
+        .atom-1 { top: 15%; right: 10%; }
+        .atom-2 { bottom: 20%; left: 15%; animation-delay: 2s; }
+        .atom-3 { top: 40%; left: 25%; animation-delay: 4s; }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Добавляем стили для прогресс-бара */
+        .progress-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--coffee-light);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--coffee-medium), var(--coffee-dark));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Стили для достижений */
+        .achievements-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .achievement {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateX(120%);
+            transition: transform 0.5s ease;
+        }
+
+        .achievement.show {
+            transform: translateX(0);
+        }
+
+        .achievement-icon {
+            font-size: 24px;
+        }
+
+        /* Стили для подсказок */
+        .hint-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .hint-button {
+            background: none;
+            border: 2px solid var(--coffee-medium);
+            color: var(--coffee-dark);
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hint-button:hover {
+            background: var(--coffee-light);
+        }
+
+        .hint-text {
+            margin-top: 10px;
+            color: var(--coffee-dark);
+            font-style: italic;
+        }
+
+        /* Стили для статистики */
+        .stats-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--coffee-light);
+            border-radius: var(--border-radius);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--coffee-dark);
+        }
+
+        .stat-label {
+            margin-top: 5px;
+            color: var(--text-color);
+        }
+
+        /* Анимации переходов */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .fade-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .fade-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        /* Добавляем стили для пробелов */
+        .letter-box.space {
+            margin: 0 10px;
+            min-width: 20px;
+        }
+
+        /* Добавляем стили для поля ввода полного слова */
+        .full-word-input-container {
+            margin: 20px 0;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .full-word-input {
+            padding: 10px 15px;
+            border: 2px solid var(--coffee-medium);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .full-word-input:focus {
+            border-color: var(--coffee-dark);
+            outline: none;
+            box-shadow: 0 0 5px rgba(166, 139, 108, 0.3);
+        }
+
+        .check-word-btn {
+            padding: 10px 20px;
+            background: var(--coffee-medium);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .check-word-btn:hover {
+            background: var(--coffee-dark);
+            transform: scale(1.05);
+        }
+
+        /* Стили для кнопки назад и рейтинга */
+        .levels-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+
+        .back-to-menu-btn {
+            background: var(--coffee-medium);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-to-menu-btn:hover {
+            background: var(--coffee-dark);
+            transform: scale(1.05);
+        }
+
+        .leaderboard-btn {
+            background: linear-gradient(135deg, var(--coffee-medium), var(--coffee-dark));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .leaderboard-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Стили для модального окна рейтинга */
+        .leaderboard-modal .modal-content {
+            max-width: 600px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--coffee-light);
+        }
+
+        .leaderboard-table th {
+            background: var(--coffee-light);
+            color: var(--coffee-dark);
+        }
+
+        .leaderboard-table tr:nth-child(even) {
+            background: rgba(166, 139, 108, 0.05);
+        }
+
+        .leaderboard-table tr.current-user {
+            background: rgba(166, 139, 108, 0.2);
+            font-weight: bold;
+        }
+
+        .rank-number {
+            font-weight: bold;
+            color: var(--coffee-dark);
+        }
+
+        /* Добавляем стили для подсказок о очках */
+        .score-details {
+            cursor: help;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .score-details:hover {
+            opacity: 1;
+        }
+
+        /* Стили для кнопки рейтинга на первой странице */
+        .auth-container {
+            position: relative;
+        }
+
+        .main-leaderboard-btn {
+            position: absolute;
+            top: -60px;
+            right: 0;
+            background: linear-gradient(135deg, var(--coffee-medium), var(--coffee-dark));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="physics-decorations">
+        <div class="physics-formula formula-1">E = mc²</div>
+        <div class="physics-formula formula-2">F = ma</div>
+        <div class="physics-formula formula-3">PV = nRT</div>
+        <div class="physics-formula formula-4">ΔS ≥ 0</div>
+        
+        <div class="coffee-cup cup-1">☕</div>
+        <div class="coffee-cup cup-2">☕</div>
+        <div class="coffee-cup cup-3">☕</div>
+        
+        <div class="atom atom-1"></div>
+        <div class="atom atom-2"></div>
+        <div class="atom atom-3"></div>
+    </div>
+    
+    <div class="decorative-pattern"></div>
+    <div class="corner-decoration corner-top-left"></div>
+    <div class="corner-decoration corner-top-right"></div>
+    <div class="corner-decoration corner-bottom-left"></div>
+    <div class="corner-decoration corner-bottom-right"></div>
+    <div class="decorative-shapes"></div>
+    <div class="container">
+        <!-- Добавляем кнопку рейтинга на первую страницу -->
+        <div id="authContainer" class="auth-container">
+
+            <div class="auth-box">
+                <h1>Добро пожаловать</h1>
+                <button id="loginBtn" class="btn">Войти</button>
+                <button id="registerBtn" class="btn">Зарегистрироваться</button>
+            </div>
+        </div>
+
+
+
+        <!-- Game Container -->
+        <div id="gameContainer" class="hidden">
+            <!-- Profile Section -->
+            <div class="profile-section">
+                <div class="profile-icon" id="profileIcon">👤</div>
+                <div class="profile-dropdown hidden" id="profileDropdown">
+                    <button class="dropdown-btn" id="detailsBtn">Подробнее</button>
+                    <button class="dropdown-btn" id="settingsBtn">Настройки</button>
+                    <button class="dropdown-btn" id="logoutBtn">Выйти</button>
+                </div>
+            </div>
+
+            <!-- Start Game Button -->
+            <div class="start-game-container" id="startGameContainer">
+                <button id="startGameBtn" class="start-game-btn">Начать игру</button>
+            </div>
+
+            <!-- Levels Grid -->
+            <div class="levels-container hidden" id="levelsContainer">
+                <div class="levels-header">
+                    <button class="back-to-menu-btn" id="backToMenuBtn">
+                        ← Назад в меню
+                    </button>
+                    <h1>Выберите уровень</h1>
+                    <button class="leaderboard-btn" id="leaderboardBtn">
+                        🏆 Рейтинг
+                    </button>
+                </div>
+                <div class="levels-grid" id="levelsGrid"></div>
+            </div>
+
+            <!-- Game Interface -->
+            <div class="game-interface hidden" id="gameInterface">
+                <div class="game-header">
+                    <button class="back-btn" id="backToLevels">← Назад к уровням</button>
+                    <div class="attempts-counter">Попыток осталось: <span id="attemptsLeft">5</span></div>
+                </div>
+                
+                <div class="hint-container">
+                    <button class="hint-button" id="hintButton">Получить подсказку</button>
+                    <div class="hint-text" id="hintText"></div>
+                </div>
+
+                <div class="full-word-input-container">
+                    <input type="text" class="full-word-input" id="fullWordInput" placeholder="Введите слово полностью...">
+                    <button class="check-word-btn" id="checkWordBtn">Проверить</button>
+                </div>
+
+                <div class="word-container">
+                    <div class="word-display" id="wordDisplay"></div>
+                    <div class="keyboard" id="keyboard"></div>
+                </div>
+
+                <div class="game-message" id="gameMessage"></div>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Вход</h2>
+                <form id="loginForm">
+                    <input type="text" name="username" placeholder="Логин" required>
+                    <input type="password" name="password" placeholder="Пароль" required>
+                    <button type="submit" class="btn">Войти</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Register Modal -->
+        <div id="registerModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Регистрация</h2>
+                <form id="registerForm">
+                    <input type="text" name="username" placeholder="Логин" required>
+                    <input type="password" name="password" placeholder="Пароль" required>
+                    <input type="password" name="confirmPassword" placeholder="Подтвердите пароль" required>
+                    <button type="submit" class="btn">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Details Modal -->
+        <div id="detailsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Статистика игрока</h2>
+                <div class="stats-container">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalGamesPlayed">0</div>
+                            <div class="stat-label">Игр сыграно</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalWordsGuessed">0</div>
+                            <div class="stat-label">Слов угадано</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="averageAttempts">0</div>
+                            <div class="stat-label">Среднее число попыток</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="currentStreak">0</div>
+                            <div class="stat-label">Текущая серия</div>
+                        </div>
+                    </div>
+                </div>
+                <h3>О игре</h3>
+                <p>Добро пожаловать в fantastic physics! Ваша задача - отгадать загаданное слово по определённой теме физики за 5 попыток. 
+                   Каждый уровень содержит новое слово и становится всё сложнее. 
+                   Удачи в прохождении всех уровней!</p>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>Настройки</h2>
+                <div class="settings-container">
+                    <div class="setting-item">
+                        <label>Звуковые эффекты</label>
+                        <input type="checkbox" id="soundToggle">
+                    </div>
+                    <div class="setting-item">
+                        <label>Музыка</label>
+                        <input type="checkbox" id="musicToggle">
+                    </div>
+                    <div class="setting-item">
+                        <label>Яркость</label>
+                        <input type="range" id="brightnessSlider" min="0" max="100" value="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавляем оверлей для контроля яркости -->
+    <div id="brightnessOverlay"></div>
+
+    <!-- Добавляем прогресс-бар -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <!-- Добавляем контейнер для достижений -->
+    <div class="achievements-container" id="achievementsContainer"></div>
+
+    <!-- Добавляем модальное окно рейтинга -->
+    <div id="leaderboardModal" class="modal leaderboard-modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Мировой рейтинг</h2>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Место</th>
+                        <th>Игрок</th>
+                        <th>Уровней пройдено</th>
+                        <th>Очки</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Audio Context for sound generation
+        let audioContext = null;
+
+        // Function to create and initialize Audio Context
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Function to generate tap sound using Web Audio API
+        function generateTapSound() {
+            initAudioContext();
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Используем square для более четкого, механического звука
+            oscillator.type = 'square';
+            
+            // Высокая частота для звука клавиатуры
+            oscillator.frequency.value = 2000;
+            
+            // Мгновенная установка громкости
+            gainNode.gain.value = 0.03;
+            
+            // Очень быстрое затухание для четкого щелчка
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.02);
+            
+            // Мгновенный старт и быстрая остановка
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.02);
+        }
+
+        // Updated playTapSound function
+        function playTapSound() {
+            if (gameSettings.sound) {
+                generateTapSound();
+            }
+        }
+
+        // Game Configuration
+        const LEVELS = [
+            { id: 1, name: ": Основы положения молекулярно-кинетической теории строения вещества", word: "Частица", hint: "Атом" },
+            { id: 2, name: ": Агрегатные состояния вещества", word: "Кристалическая сетка", hint: "Кристалл" },
+            { id: 3, name: ": Смачивание", word: "Капиляр", hint: "Трубка" },
+            { id: 4, name: ": Температура", word: "Цельсия", hint: "Фаренгейт" },
+            { id: 5, name: ": Внутранняя энергия", word: "Агрегатное состояние", hint: "Состояние вещества" },
+            { id: 6, name: ": Способы изменения внутренней энергии тела", word: "Теплопередача", hint: "Тепло" },
+            { id: 7, name: ": Теплопроводность", word: "Энергия", hint: "mc^2" },
+            { id: 8, name: ": Конвекция", word: "Жидкость", hint: "Вода" },
+            { id: 9, name: ": Излучение", word: "Электромагнитная волна", hint: "Волна" },
+            { id: 10, name: ": Кол-во теплоты", word: "Джоуль", hint: "Единица измерения" },
+            { id: 11, name: ": Удельная теплоёмкость", word: "Джоуль на килограмм-градус Цельсия", hint: "Единица измерения" },
+            { id: 12, name: ": Расчет кол-во теплоты", word: "Кол-во  отданной теплоты равно кол-во полученной теплоты", hint: "закон сохранения энергии в термодинамических процессах" },
+            { id: 13, name: ": Энергия топлива", word: "Джоуль на килограмм", hint: "Единица измерения" },
+            { id: 14, name: ": Плавление и отвердевание кристаллических тел", word: "Кристаллизация", hint: "Процесс" },
+            { id: 15, name: ": Удельная теплота плавления", word: "Лямбда", hint: "Единица измерения" },
+            { id: 16, name: ": Конденсация", word: "Процесс превращения пара в жидкость", hint: "Процесс" },
+            { id: 17, name: ": Влажность воздуха", word: "Фи", hint: "Единица измерения" },
+            { id: 18, name: ": Двигатель внутреннего сгорания", word: "Дизель", hint: "Топливо" },
+            { id: 19, name: ": Электризация тел при соприкосновении", word: "Кулон", hint: "Учёный" },
+            { id: 20, name: ": Электрический ток", word: "Направленное движение заряженных частиц", hint: "Определение" },
+            { id: 21, name: ": Сила электрического тока", word: "Ампер", hint: "Единица измерения" },
+            { id: 22, name: ": Электрическое напряжение", word: "Вольт", hint: "Единица измерения" },
+            { id: 23, name: ": Закон Ома рофл", word: "Нету денег сиди дома", hint: "САМ ДУМАЙ!!!" },
+            { id: 24, name: ": Закон Ома", word: "Напряжение равно произведению силы тока на сопротивление", hint: "Учи физику лучше :)" },
+            { id: 25, name: ": Работа тока", word: "Мощность тока помноженная на время", hint: "Формула" },
+            { id: 26, name: ": Мощность тока", word: "Работа тока деленная на время", hint: "Формула, чел" },
+            { id: 27, name: ": Магнитное поле", word: "Постноянный магниты", hint: "Магнит" },
+            { id: 28, name: ": Магнитное поле тока", word: "Опыт Ампера", hint: "Опыт кого-то" },
+            { id: 29, name: ": Правило правой руки", word: "Направление магнитных силовых линий", hint: "Что определяет?" },
+            { id: 30, name: ": Правило левой руки", word: "Сила Ампера", hint: "Что показывает?" },
+            { id: 31, name: ": Световые явления", word: "Источники света", hint: "Откуда берется свет?" },
+            { id: 32, name: ": Отражение света", word: "Закон отражения света", hint: "Закон какой-то" },
+            { id: 33, name: ": Преломление света", word: "Произведение синуса угла падения на показатель преломления равно произведению синуса угла преломления на показатель преломления", hint: "Можно петь" },
+            { id: 34, name: ": Линза", word: "Выпуклая линза", hint: "Опять закон" },
+            { id: 35, name: ": Главный фокус линзы", word: "Точка пересечения падающих на линзу параллельных лучей", hint: "Определение" },
+            { id: 36, name: ": Фокусное расстояние линзы", word: "Расстояние от линзы до фокуса", hint: "Определение" },
+            
+            
+        ];
+
+        // DOM Elements
+        const authContainer = document.getElementById('authContainer');
+        const gameContainer = document.getElementById('gameContainer');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const loginModal = document.getElementById('loginModal');
+        const registerModal = document.getElementById('registerModal');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const profileIcon = document.getElementById('profileIcon');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const detailsBtn = document.getElementById('detailsBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const startGameContainer = document.getElementById('startGameContainer');
+        const levelsContainer = document.getElementById('levelsContainer');
+        const levelsGrid = document.getElementById('levelsGrid');
+        const gameInterface = document.getElementById('gameInterface');
+        const wordDisplay = document.getElementById('wordDisplay');
+        const keyboard = document.getElementById('keyboard');
+        const attemptsLeft = document.getElementById('attemptsLeft');
+        const gameMessage = document.getElementById('gameMessage');
+        const backToLevels = document.getElementById('backToLevels');
+        const detailsModal = document.getElementById('detailsModal');
+        const settingsModal = document.getElementById('settingsModal');
+        const soundToggle = document.getElementById('soundToggle');
+        const musicToggle = document.getElementById('musicToggle');
+        const brightnessSlider = document.getElementById('brightnessSlider');
+
+        // Game State
+        let currentUser = null;
+        let currentLevel = null;
+        let currentWord = '';
+        let currentGuess = [];
+        let remainingAttempts = 5;
+        let usedLetters = new Set();
+
+        // Game Settings
+        let gameSettings = {
+            sound: true,
+            music: true,
+            brightness: 100
+        };
+
+        // Functions
+        function showGameContainer() {
+            authContainer.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+        }
+
+        function showAuthContainer() {
+            authContainer.classList.remove('hidden');
+            gameContainer.classList.add('hidden');
+        }
+
+        function showModal(modal) {
+            modal.classList.add('active');
+        }
+
+        function hideModal(modal) {
+            modal.classList.remove('active');
+        }
+
+        function initializeLevels() {
+            levelsGrid.innerHTML = '';
+            
+            LEVELS.forEach(level => {
+                const button = document.createElement('button');
+                button.className = 'level-button';
+                
+                const isCompleted = currentUser.progress.includes(level.id);
+                const isAvailable = level.id === 1 || currentUser.progress.includes(level.id - 1);
+                
+                button.classList.add(isCompleted ? 'completed' : isAvailable ? 'available' : 'locked');
+                
+                button.innerHTML = `
+                    <span>Уровень ${level.id}</span>
+                    <span>${level.name}</span>
+                    ${isCompleted ? '<span>✓</span>' : ''}
+                `;
+                
+                if (isAvailable && !isCompleted) {
+                    button.addEventListener('click', () => startLevel(level));
+                }
+                
+                levelsGrid.appendChild(button);
+            });
+        }
+
+        function startLevel(level) {
+            currentLevel = level;
+            currentWord = level.word;
+            currentGuess = Array(currentWord.length).fill('');
+            remainingAttempts = 5;
+            usedLetters.clear();
+            
+            // Добавляем отслеживание использования подсказки
+            currentUser.levelData = currentUser.levelData || {};
+            currentUser.levelData[level.id] = { hintUsed: false };
+            
+            levelsContainer.classList.add('hidden');
+            gameInterface.classList.remove('hidden');
+            updateGameDisplay();
+            createKeyboard();
+
+            document.getElementById('fullWordInput').value = '';
+            document.getElementById('hintButton').disabled = false;
+            document.getElementById('hintText').textContent = '';
+        }
+
+        function updateGameDisplay() {
+            wordDisplay.innerHTML = '';
+            for (let i = 0; i < currentWord.length; i++) {
+                const letterBox = document.createElement('div');
+                letterBox.className = 'letter-box';
+                
+                // Если это пробел, показываем его сразу и добавляем специальный класс
+                if (currentWord[i] === ' ') {
+                    letterBox.textContent = ' ';
+                    letterBox.classList.add('space');
+                    letterBox.style.borderColor = 'transparent';
+                    letterBox.style.background = 'transparent';
+                } else {
+                    letterBox.textContent = currentGuess[i] || '';
+                }
+                
+                wordDisplay.appendChild(letterBox);
+            }
+            
+            attemptsLeft.textContent = remainingAttempts;
+        }
+
+        function createKeyboard() {
+            keyboard.innerHTML = '';
+            const letters = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
+            
+            letters.forEach(letter => {
+                const button = document.createElement('button');
+                button.className = 'key';
+                button.textContent = letter;
+                
+                if (!usedLetters.has(letter)) {
+                    button.addEventListener('click', () => {
+                        playTapSound();
+                        makeGuess(letter);
+                    });
+                } else {
+                    button.classList.add('used');
+                }
+                
+                keyboard.appendChild(button);
+            });
+        }
+
+        function makeGuess(letter) {
+            if (usedLetters.has(letter) || remainingAttempts <= 0) return;
+            
+            usedLetters.add(letter);
+            let letterFound = false;
+            
+            const upperLetter = letter.toUpperCase();
+            const upperWord = currentWord.toUpperCase();
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                // Пропускаем пробелы при проверке
+                if (currentWord[i] === ' ') continue;
+                
+                if (upperWord[i] === upperLetter) {
+                    currentGuess[i] = currentWord[i];
+                    letterFound = true;
+                }
+            }
+            
+            const key = Array.from(keyboard.children).find(k => k.textContent === letter);
+            key.classList.add(letterFound ? 'correct' : 'wrong');
+            
+            if (!letterFound) {
+                remainingAttempts--;
+            }
+            
+            // Проверяем победу, игнорируя пробелы
+            const guessedWord = currentGuess.join('');
+            const isWin = Array.from(currentWord).every((letter, index) => {
+                return letter === ' ' || guessedWord[index] === letter;
+            });
+            
+            if (isWin) {
+                handleWin();
+            } else if (remainingAttempts <= 0) {
+                handleLoss();
+            }
+            
+            updateGameDisplay();
+        }
+
+        function handleWin() {
+            if (!currentUser.progress.includes(currentLevel.id)) {
+                currentUser.progress.push(currentLevel.id);
+                currentUser.progress.sort((a, b) => a - b);
+                
+                // Обновляем статистику
+                currentUser.stats = currentUser.stats || {
+                    gamesPlayed: 0,
+                    wordsGuessed: 0,
+                    totalAttempts: 0,
+                    currentStreak: 0,
+                    totalScore: 0
+                };
+                
+                currentUser.stats.gamesPlayed++;
+                currentUser.stats.wordsGuessed++;
+                currentUser.stats.totalAttempts += (5 - remainingAttempts);
+                currentUser.stats.currentStreak++;
+                
+                // Проверяем достижения
+                if (currentUser.stats.currentStreak === 3) {
+                    showAchievement('streak3');
+                }
+                
+                updateProgress();
+                saveUserProgress();
+                updateStats();
+            }
+            
+            gameMessage.className = 'game-message success';
+            gameMessage.textContent = 'Поздравляем! Вы угадали слово!';
+            
+            setTimeout(() => {
+                returnToLevels();
+            }, 2000);
+        }
+
+        function handleLoss() {
+            currentUser.stats = currentUser.stats || {
+                gamesPlayed: 0,
+                wordsGuessed: 0,
+                totalAttempts: 0,
+                currentStreak: 0,
+                totalScore: 0
+            };
+            
+            currentUser.stats.gamesPlayed++;
+            currentUser.stats.currentStreak = 0;
+            
+            saveUserProgress();
+            updateStats();
+            
+            gameMessage.className = 'game-message error';
+            gameMessage.textContent = `Игра окончена! Загаданное слово: ${currentWord}`;
+            
+            setTimeout(() => {
+                returnToLevels();
+            }, 3000);
+        }
+
+        function returnToLevels() {
+            gameInterface.classList.add('hidden');
+            levelsContainer.classList.remove('hidden');
+            gameMessage.className = 'game-message';
+            gameMessage.textContent = '';
+            initializeLevels();
+        }
+
+        function loadSettings() {
+            const savedSettings = JSON.parse(localStorage.getItem('gameSettings') || '{}');
+            gameSettings = { ...gameSettings, ...savedSettings };
+            
+            soundToggle.checked = gameSettings.sound;
+            musicToggle.checked = gameSettings.music;
+            brightnessSlider.value = gameSettings.brightness;
+            
+            updateBrightness();
+        }
+
+        function saveSettings() {
+            localStorage.setItem('gameSettings', JSON.stringify(gameSettings));
+        }
+
+        function updateBrightness() {
+            const brightnessValue = gameSettings.brightness;
+            // Преобразуем значение яркости (0-100) в прозрачность (0.8-0)
+            // При минимальной яркости (0) максимальная прозрачность будет 0.8
+            const opacity = (100 - brightnessValue) * 0.008; // 0.8 / 100 = 0.008
+            document.getElementById('brightnessOverlay').style.backgroundColor = `rgba(0, 0, 0, ${opacity})`;
+        }
+
+        function checkAuth() {
+            const user = localStorage.getItem('currentUser');
+            if (user) {
+                currentUser = JSON.parse(user);
+                showGameContainer();
+                updateProgress();
+                updateStats();
+            }
+        }
+
+        // Event Listeners
+        loginBtn.addEventListener('click', () => {
+            playTapSound();
+            showModal(loginModal);
+        });
+        
+        registerBtn.addEventListener('click', () => {
+            playTapSound();
+            showModal(registerModal);
+        });
+
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                playTapSound();
+                const modal = btn.closest('.modal');
+                hideModal(modal);
+            });
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(loginForm);
+            const username = formData.get('username');
+            const password = formData.get('password');
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                hideModal(loginModal);
+                loginForm.reset();
+                showGameContainer();
+            } else {
+                alert('Неверный логин или пароль');
+            }
+        });
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(registerForm);
+            const username = formData.get('username');
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirmPassword');
+
+            if (password !== confirmPassword) {
+                alert('Пароли не совпадают');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            
+            if (users.some(u => u.username === username)) {
+                alert('Пользователь с таким именем уже существует');
+                return;
+            }
+
+            const newUser = { username, password, progress: [] };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            currentUser = newUser;
+            localStorage.setItem('currentUser', JSON.stringify(newUser));
+            
+            hideModal(registerModal);
+            registerForm.reset();
+            showGameContainer();
+        });
+
+        profileIcon.addEventListener('click', () => {
+            playTapSound();
+            profileDropdown.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.add('hidden');
+            }
+        });
+
+        detailsBtn.addEventListener('click', () => {
+            playTapSound();
+            profileDropdown.classList.add('hidden');
+            showModal(detailsModal);
+        });
+
+        settingsBtn.addEventListener('click', () => {
+            playTapSound();
+            profileDropdown.classList.add('hidden');
+            showModal(settingsModal);
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            playTapSound();
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            showAuthContainer();
+        });
+
+        startGameBtn.addEventListener('click', () => {
+            playTapSound();
+            startGameContainer.classList.add('hidden');
+            levelsContainer.classList.remove('hidden');
+            initializeLevels();
+        });
+
+        backToLevels.addEventListener('click', () => {
+            playTapSound();
+            returnToLevels();
+        });
+
+        soundToggle.addEventListener('change', () => {
+            gameSettings.sound = soundToggle.checked;
+            saveSettings();
+        });
+
+        musicToggle.addEventListener('change', () => {
+            gameSettings.music = musicToggle.checked;
+            saveSettings();
+        });
+
+        brightnessSlider.addEventListener('input', () => {
+            gameSettings.brightness = parseInt(brightnessSlider.value);
+            updateBrightness();
+            saveSettings();
+        });
+
+        // Initialize
+        checkAuth();
+        loadSettings();
+
+        // Initialize audio on first user interaction
+        document.addEventListener('click', function initAudio() {
+            initAudioContext();
+            document.removeEventListener('click', initAudio);
+        }, { once: true });
+
+        // Добавляем систему достижений
+        const ACHIEVEMENTS = {
+            firstWin: { icon: '🌟', title: 'Первая победа', description: 'Вы выиграли свою первую игру!' },
+            perfectGame: { icon: '💯', title: 'Идеальная игра', description: 'Угадали слово без ошибок!' },
+            streak3: { icon: '🔥', title: 'Серия побед', description: 'Выиграли 3 игры подряд!' },
+            halfWay: { icon: '🏆', title: 'На полпути', description: 'Прошли 50% уровней!' }
+        };
+
+        function showAchievement(achievementId) {
+            const achievement = ACHIEVEMENTS[achievementId];
+            const achievementElement = document.createElement('div');
+            achievementElement.className = 'achievement';
+            achievementElement.innerHTML = `
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div>
+                    <div><strong>${achievement.title}</strong></div>
+                    <div>${achievement.description}</div>
+                </div>
+            `;
+            document.getElementById('achievementsContainer').appendChild(achievementElement);
+            setTimeout(() => achievementElement.classList.add('show'), 100);
+            setTimeout(() => achievementElement.remove(), 5000);
+
+            // Воспроизводим звук достижения
+            if (gameSettings.sound) {
+                playAchievementSound();
+            }
+        }
+
+        // Функция для обновления прогресс-бара
+        function updateProgress() {
+            const totalLevels = LEVELS.length;
+            const completedLevels = currentUser.progress.length;
+            const progressPercentage = (completedLevels / totalLevels) * 100;
+            document.getElementById('progressFill').style.width = `${progressPercentage}%`;
+
+            // Проверяем достижение halfWay
+            if (progressPercentage >= 50 && !currentUser.achievements?.includes('halfWay')) {
+                showAchievement('halfWay');
+                currentUser.achievements = [...(currentUser.achievements || []), 'halfWay'];
+                saveUserProgress();
+            }
+        }
+
+        // Функция для воспроизведения звука достижения
+        function playAchievementSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime + 0.2);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Функция обновления статистики
+        function updateStats() {
+            if (currentUser.stats) {
+                document.getElementById('totalGamesPlayed').textContent = currentUser.stats.gamesPlayed;
+                document.getElementById('totalWordsGuessed').textContent = currentUser.stats.wordsGuessed;
+                document.getElementById('averageAttempts').textContent = 
+                    (currentUser.stats.totalAttempts / currentUser.stats.gamesPlayed || 0).toFixed(1);
+                document.getElementById('currentStreak').textContent = currentUser.stats.currentStreak;
+            }
+        }
+
+        // Функция сохранения прогресса пользователя
+        function saveUserProgress() {
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            users[userIndex] = currentUser;
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        // Обновляем функцию для подсказки
+        document.getElementById('hintButton').addEventListener('click', () => {
+            const hintText = document.getElementById('hintText');
+            hintText.textContent = currentLevel.hint;
+            document.getElementById('hintButton').disabled = true;
+            
+            // Отмечаем использование подсказки
+            currentUser.levelData[currentLevel.id].hintUsed = true;
+            saveUserProgress();
+        });
+
+        // Добавляем функцию проверки полного слова
+        function checkFullWord() {
+            const input = document.getElementById('fullWordInput');
+            const guessedWord = input.value.trim();
+            
+            if (guessedWord.toLowerCase() === currentWord.toLowerCase()) {
+                // Заполняем все буквы правильного слова
+                for (let i = 0; i < currentWord.length; i++) {
+                    currentGuess[i] = currentWord[i];
+                }
+                updateGameDisplay();
+                handleWin();
+                
+                // Воспроизводим звук успеха
+                if (gameSettings.sound) {
+                    playSuccessSound();
+                }
+            } else {
+                // Уменьшаем количество попыток
+                remainingAttempts--;
+                attemptsLeft.textContent = remainingAttempts;
+                
+                // Показываем сообщение об ошибке
+                gameMessage.className = 'game-message error';
+                gameMessage.textContent = 'Неверное слово!';
+                setTimeout(() => {
+                    gameMessage.textContent = '';
+                }, 2000);
+                
+                // Воспроизводим звук ошибки
+                if (gameSettings.sound) {
+                    playErrorSound();
+                }
+                
+                if (remainingAttempts <= 0) {
+                    handleLoss();
+                }
+            }
+            
+            // Очищаем поле ввода
+            input.value = '';
+        }
+
+        // Функция для звука успеха
+        function playSuccessSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(660, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // Функция для звука ошибки
+        function playErrorSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(330, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(220, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // Добавляем обработчики событий
+        document.getElementById('checkWordBtn').addEventListener('click', checkFullWord);
+        
+        document.getElementById('fullWordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkFullWord();
+            }
+        });
+
+        // Добавляем функции для работы с рейтингом
+        function calculateUserScore(user) {
+            user.stats = user.stats || { 
+                gamesPlayed: 0,
+                wordsGuessed: 0,
+                totalAttempts: 0,
+                currentStreak: 0,
+                totalScore: 0
+            };
+
+            // Базовые очки за пройденные уровни
+            let levelPoints = 0;
+            user.progress.forEach(levelId => {
+                const levelData = user.levelData?.[levelId];
+                if (levelData) {
+                    // +10 за пройденный уровень, +5 если использована подсказка
+                    levelPoints += levelData.hintUsed ? 5 : 10;
+                }
+            });
+
+            // Очки за серию побед (+2 за каждую победу в серии)
+            const streakPoints = (user.stats.currentStreak || 0) * 2;
+
+            // Штрафы за неудачные попытки (-1 за каждый проигрыш)
+            const failedAttempts = (user.stats.gamesPlayed || 0) - (user.stats.wordsGuessed || 0);
+            const penaltyPoints = failedAttempts * -1;
+
+            const totalScore = levelPoints + streakPoints + penaltyPoints;
+
+            return {
+                levelsCompleted: user.progress.length,
+                score: totalScore,
+                details: {
+                    levelPoints,
+                    streakPoints,
+                    penaltyPoints
+                }
+            };
+        }
+
+        function updateLeaderboard() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const leaderboardData = users.map(user => ({
+                username: user.username,
+                ...calculateUserScore(user)
+            }))
+            .sort((a, b) => b.score - a.score);
+
+            const tbody = document.getElementById('leaderboardTableBody');
+            tbody.innerHTML = '';
+
+            leaderboardData.forEach((user, index) => {
+                const row = document.createElement('tr');
+                if (user.username === currentUser.username) {
+                    row.classList.add('current-user');
+                }
+
+                row.innerHTML = `
+                    <td><span class="rank-number">#${index + 1}</span></td>
+                    <td>${user.username}</td>
+                    <td>${user.levelsCompleted}</td>
+                    <td>
+                        ${user.score} 
+                        <span class="score-details" title="Уровни: ${user.details.levelPoints}, Серия: +${user.details.streakPoints}, Штрафы: ${user.details.penaltyPoints}">
+                            ℹ️
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Добавляем обработчики для новых кнопок
+        document.getElementById('backToMenuBtn').addEventListener('click', () => {
+            levelsContainer.classList.add('hidden');
+            startGameContainer.classList.remove('hidden');
+        });
+
+        document.getElementById('leaderboardBtn').addEventListener('click', () => {
+            updateLeaderboard();
+            showModal(document.getElementById('leaderboardModal'));
+        });
+
+        // Обновляем функцию handleWin для обновления рейтинга
+        const originalHandleWin = handleWin;
+        handleWin = function() {
+            originalHandleWin();
+            // Обновляем рейтинг при победе
+            const leaderboardModal = document.getElementById('leaderboardModal');
+            if (leaderboardModal.classList.contains('active')) {
+                updateLeaderboard();
+            }
+        };
+
+
+    </script>
+</body>
+</html> 
